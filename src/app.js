@@ -1,3 +1,4 @@
+// src/app.js
 import express from 'express'
 import { testConnection } from './config/database.js'
 import './models/index.js'
@@ -20,11 +21,17 @@ import phieuKhoRoutes from './routes/phieuKhoRoutes.js';
 import configRoutes from './routes/configRoutes.js';
 import userRoutes from './routes/usersRoutes.js';
 
+// 💡 IMPORT MỚI: Thêm Lo Thuoc Routes
+import loThuocRoutes from './routes/loThuocRoutes.js';
+
+
 app.use('/api/users', userRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/thuoc', thuocRoutes);
 app.use('/api/phieu-kho', phieuKhoRoutes);
-app.use('/api', configRoutes); // exposes GET /api/config
+// 💡 SỬ DỤNG ROUTE MỚI
+app.use('/api/lo-thuoc', loThuocRoutes);
+app.use('/api', configRoutes); // exposes GET /api/config and GET /api/dashboard
 
 app.use(express.static(path.join(__dirname, '../public')));
 app.use('/assets', express.static(path.join(__dirname, '../public/assets')));
