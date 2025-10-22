@@ -3,14 +3,14 @@
 
 <head>
     <meta charset="utf-8" />
-    <title>Quản trị người dùng (ADMIN)</title>
+    <title>Quản trị thuốc (ADMIN)</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="/assets/css/users.css" />
 </head>
 
 <body>
     <header class="row">
-        <h2>🛡️ ADMIN — Quản trị người dùng</h2>
+        <h2>🛡️ ADMIN — Quản trị Thuốc</h2>
         <div class="right row">
             <span class="muted" id="me_info">Đang kiểm tra phiên...</span>
             <button id="btn_logout" class="warn">Đăng xuất</button>
@@ -19,16 +19,16 @@
 
     <main>
         <div class="admin-nav row">
-            <a href="/admin/users.html" class="active">Quản lý người dùng</a>
-            <a href="/admin/thuoc.html">Quản lý thuốc</a>
+            <a href="/admin/users.html">Quản lý người dùng</a>
+            <a href="/admin/thuoc.html" class="active">Quản lý thuốc</a>
         </div>
 
         <div class="card">
             <div class="row">
-                <input id="q" placeholder="Tìm Username / Họ tên / Email..." style="flex:1" />
+                <input id="q" placeholder="Tìm tên thuốc / mã thuốc..." style="flex:1" />
                 <button id="btn_search">Tìm</button>
                 <div class="right"></div>
-                <button id="btn_new" class="primary">+ Thêm người dùng</button>
+                <button id="btn_new" class="primary">+ Thêm thuốc mới</button>
             </div>
         </div>
 
@@ -46,10 +46,11 @@
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th>Username</th>
-                        <th>Họ tên</th>
-                        <th>Email</th>
-                        <th>Vai trò</th>
+                        <th>Mã thuốc</th>
+                        <th>Tên thuốc</th>
+                        <th>Loại ID</th>
+                        <th>DVT ID</th>
+                        <th>Ngưỡng cảnh báo</th>
                         <th>Hoạt động</th>
                         <th>Thao tác</th>
                     </tr>
@@ -61,36 +62,37 @@
 
     <div class="modal-backdrop" id="modal_bk">
         <div class="modal">
-            <h3 id="modal_title">Thêm/Sửa người dùng</h3>
+            <h3 id="modal_title">Thêm/Sửa Thuốc</h3>
             <div class="grid">
                 <div>
-                    <label>Username</label>
-                    <input id="f_username" placeholder="Username" data-id="" />
+                    <label>Mã thuốc</label>
+                    <input id="f_ma_thuoc" placeholder="Mã thuốc" data-id="" />
                 </div>
                 <div>
-                    <label>Mật khẩu (Để trống nếu không đổi)</label>
-                    <input id="f_password" type="password" placeholder="Mật khẩu" />
+                    <label>Tên thuốc</label>
+                    <input id="f_ten_thuoc" placeholder="Tên thuốc" />
                 </div>
                 <div>
-                    <label>Họ tên</label>
-                    <input id="f_ho_ten" placeholder="Họ tên" />
-                </div>
-                <div>
-                    <label>Email</label>
-                    <input id="f_email" type="email" placeholder="Email" />
-                </div>
-                <div>
-                    <label>Vai trò</label>
-                    <select id="f_role">
-                        <option value="STAFF">STAFF</option>
-                        <option value="ADMIN">ADMIN</option>
+                    <label>Loại Thuốc</label>
+                    <select id="f_loai_id">
+                        <option value="">-- Tải loại thuốc --</option>
                     </select>
+                </div>
+                <div>
+                    <label>Đơn vị tính</label>
+                    <select id="f_dvt_id">
+                        <option value="">-- Tải đơn vị tính --</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Ngưỡng cảnh báo</label>
+                    <input id="f_nguong_canh_bao" type="number" placeholder="Số lượng tối thiểu" />
                 </div>
                 <div>
                     <label>Trạng thái</label>
                     <select id="f_hoat_dong">
-                        <option value="1">Hoạt động</option>
-                        <option value="0">Khóa</option>
+                        <option value="1">Đang hoạt động</option>
+                        <option value="0">Ngừng hoạt động</option>
                     </select>
                 </div>
             </div>
@@ -102,7 +104,7 @@
         </div>
     </div>
 
-    <script src="/assets/js/users.js"></script>
+    <script src="/assets/js/thuoc.js"></script>
 </body>
 
 </html>

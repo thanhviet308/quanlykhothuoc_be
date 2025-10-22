@@ -1,12 +1,20 @@
-import { Thuoc } from '../models/index.js';
+// src/controllers/thuocController.js
+import { Thuoc, DonViTinh, LoaiThuoc } from '../models/index.js'; // Cập nhật import
+import { Op } from 'sequelize';
 
 export async function listThuoc(req, res) {
     const { q, limit = 50, offset = 0 } = req.query;
     const where = {};
-    if (q) where.ten_thuoc = { [Symbol.for('like')]: `%${q}%` };
+    if (q) {
+        const like = { [Op.iLike]: `%${q}%` };
+        where[Op.or] = [
+            { ten_thuoc: like },
+            { ma_thuoc: like },
+        ];
+    }
 
     try {
-        const items = await Thuoc.findAll({ where, limit: +limit, offset: +offset });
+        const items = await Thuoc.findAll({ where, limit: +limit, offset: +offset, order: [['id', 'DESC']] });
         res.json(items);
     } catch (err) {
         console.error(err);
@@ -58,3 +66,32 @@ export async function deleteThuoc(req, res) {
         res.status(500).json({ message: err.message });
     }
 }
+
+// ====== HÀM MỚI CHO DROPDOWN (START) ======
+
+export async function listDonViTinh(req, res) {
+    try {
+        const items = await DonViTinh.findAll({
+            attributes: ['id', 'ten'],
+            order: [['ten', 'ASC']]
+        });
+        res.json(items);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: err.message });
+    }
+}
+
+export async function listLoaiThuoc(req, res) {
+    try {
+        const items = await LoaiThuoc.findAll({
+            attributes: ['id', 'ten'],
+            order: [['ten', 'ASC']]
+        });
+        res.json(items);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: err.message });
+    }
+}
+// ====== HÀM MỚI CHO DROPDOWN (END) ======

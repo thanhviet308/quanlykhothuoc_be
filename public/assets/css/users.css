@@ -209,3 +209,26 @@ th {
     border-color: #9ca3af;
     color: #4b5563;
 }
+
+.admin-nav {
+    display: flex;
+    /* Đảm bảo các link nằm ngang */
+    gap: 8px;
+    margin-bottom: 10px;
+    /* Dùng border-bottom của main để phân tách, hoặc: */
+    border-bottom: 1px solid var(--border);
+}
+
+.admin-nav a {
+    padding: 10px 15px;
+    text-decoration: none;
+    color: var(--muted);
+    border-bottom: 2px solid transparent;
+    font-weight: 500;
+    transition: all 0.15s ease-in-out;
+}
+
+.admin-nav a.active {
+    color: var(--primary);
+    border-bottom: 2px solid var(--primary);
+}
