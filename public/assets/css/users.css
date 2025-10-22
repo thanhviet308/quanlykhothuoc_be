@@ -1,0 +1,211 @@
+:root {
+    --bg: #f5f7fa;
+    --card: #ffffff;
+    --border: #d1d5db;
+    --txt: #1f2937;
+    --muted: #6b7280;
+    --ok: #16a34a;
+    --warn: #e67e22;
+    --danger: #ef4444;
+    --primary: #2563eb;
+}
+
+* {
+    box-sizing: border-box;
+    font-family: Inter, system-ui, Segoe UI, Roboto, Arial, sans-serif;
+}
+
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--txt);
+}
+
+/* ===== HEADER ===== */
+header {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    background: #ffffff;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+
+main {
+    padding: 16px;
+    max-width: 1200px;
+    margin: auto;
+}
+
+/* ===== LAYOUT ===== */
+.row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.right {
+    margin-left: auto;
+}
+
+/* ===== CARD ===== */
+.card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px;
+    margin-top: 14px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* ===== INPUT & SELECT ===== */
+input,
+select {
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--txt);
+    padding: 10px 12px;
+    transition: all 0.2s ease;
+}
+
+input:focus,
+select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25);
+}
+
+/* ===== BUTTON ===== */
+button {
+    border: 1px solid var(--border);
+    background: #f9fafb;
+    color: var(--txt);
+    padding: 10px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.15s ease-in-out;
+}
+
+button:hover {
+    background: #e5e7eb;
+    transform: translateY(-1px);
+}
+
+button.primary {
+    background: var(--primary);
+    border-color: #1d4ed8;
+    color: #ffffff;
+}
+
+button.primary:hover {
+    background: #1e40af;
+}
+
+button.ok {
+    background: var(--ok);
+    border-color: #15803d;
+    color: #fff;
+}
+
+button.ok:hover {
+    background: #15803d;
+}
+
+button.warn {
+    background: var(--warn);
+    border-color: #be651a;
+    color: #fff;
+}
+
+button.warn:hover {
+    background: #be651a;
+}
+
+button.danger {
+    background: var(--danger);
+    border-color: #b91c1c;
+    color: #fff;
+}
+
+button.danger:hover {
+    background: #b91c1c;
+}
+
+/* ===== TABLE ===== */
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-top: 10px;
+}
+
+th,
+td {
+    padding: 10px;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    font-size: 14px;
+}
+
+th {
+    color: #374151;
+    background: #f9fafb;
+}
+
+/* ===== TEXT ===== */
+.muted {
+    color: var(--muted);
+}
+
+/* ===== MODAL ===== */
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px;
+    min-width: 320px;
+    max-width: 640px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* ===== GRID ===== */
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+/* ===== MISC ===== */
+.hidden {
+    display: none !important;
+}
+
+/* ===== STATUS TAGS ===== */
+.pill {
+    padding: 4px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    font-size: 12px;
+}
+
+.pill.active {
+    background: rgba(22, 163, 74, 0.15);
+    border-color: #1f7a3a;
+    color: #15803d;
+}
+
+.pill.inactive {
+    background: rgba(148, 163, 184, 0.15);
+    border-color: #9ca3af;
+    color: #4b5563;
+}

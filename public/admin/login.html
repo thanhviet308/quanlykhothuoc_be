@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="vi">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Đăng nhập — Admin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="/assets/css/auth.css" />
+</head>
+
+<body>
+    <div class="auth-wrap">
+        <div class="auth-card">
+            <h1>🔐 Đăng nhập</h1>
+            <p class="muted">Nhập username & mật khẩu để vào trang quản trị.</p>
+
+            <label>Tên đăng nhập</label>
+            <input id="loginUser" autocomplete="username" placeholder="admin" />
+
+            <label>Mật khẩu</label>
+            <input id="loginPwd" type="password" autocomplete="current-password" placeholder="••••••••" />
+
+            <div class="row">
+                <button id="btnLogin" class="primary" style="width: 100%;">Đăng nhập</button>
+            </div>
+
+            <p class="muted" style="text-align: center; margin-top: 16px;">
+                Chưa có tài khoản?
+                <a class="link" href="/admin/register.html">Đăng ký ngay</a>
+            </p>
+
+            <p id="loginMsg" class="muted"></p>
+        </div>
+    </div>
+
+    <script src="/assets/js/login.js"></script>
+</body>
+
+</html>

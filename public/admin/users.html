@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="vi">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Quản trị người dùng (ADMIN)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Liên kết CSS -->
+    <link rel="stylesheet" href="/assets/css/users.css" />
+</head>
+
+<body>
+    <header class="row">
+        <h2>🛡️ ADMIN — Quản trị người dùng</h2>
+        <div class="right row">
+            <span class="muted" id="me_info">Đang kiểm tra phiên...</span>
+            <button id="btn_logout" class="warn">Đăng xuất</button>
+        </div>
+    </header>
+
+    <main>
+        <!-- Bộ lọc / công cụ -->
+        <div class="card">
+            <div class="row">
+                <input id="q" placeholder="Tìm username / họ tên / email..." style="flex:1" />
+                <button id="btn_search">Tìm</button>
+                <div class="right"></div>
+                <button id="btn_new" class="primary">+ Thêm người dùng</button>
+            </div>
+        </div>
+
+        <!-- Bảng dữ liệu -->
+        <div class="card">
+            <div class="row">
+                <div class="muted" id="count_info">0 kết quả</div>
+                <div class="right row">
+                    <button id="prev">&larr; Trước</button>
+                    <span id="page_info" class="muted">Trang 1/1</span>
+                    <button id="next">Sau &rarr;</button>
+                </div>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Username</th>
+                        <th>Họ tên</th>
+                        <th>Email</th>
+                        <th>Vai trò</th>
+                        <th>Hoạt động</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody"></tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- Modal thêm/sửa -->
+    <div class="modal-backdrop" id="modal_bk">
+        <div class="modal">
+            <h3 id="modal_title">Thêm người dùng</h3>
+            <div class="grid">
+                <div>
+                    <label>Username</label>
+                    <input id="f_username" placeholder="nguyenviet01" />
+                </div>
+                <div>
+                    <label>Vai trò</label>
+                    <select id="f_role">
+                        <option value="STUDENT">NHÂN VIÊN</option>
+                        <option value="ADMIN">ADMIN</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Họ tên</label>
+                    <input id="f_ho_ten" />
+                </div>
+                <div>
+                    <label>Email</label>
+                    <input id="f_email" type="email" />
+                </div>
+                <div>
+                    <label>Mật khẩu</label>
+                    <input id="f_password" type="password" />
+                </div>
+                <div>
+                    <label>Trạng thái</label>
+                    <select id="f_hoat_dong">
+                        <option value="1">Đang hoạt động</option>
+                        <option value="0">Ngừng hoạt động</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row">
+                <button id="btn_save" class="ok">Lưu</button>
+                <button id="btn_cancel">Hủy</button>
+                <div class="right muted" id="form_msg"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liên kết JS -->
+    <script src="/assets/js/users.js"></script>
+</body>
+
+</html>

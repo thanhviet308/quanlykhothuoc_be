@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="vi">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Đăng ký tài khoản</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="/assets/css/auth.css" />
+</head>
+
+<body>
+    <div class="auth-wrap">
+        <div class="auth-card">
+            <h1>📝 Đăng ký</h1>
+            <p class="muted">Điền thông tin để tạo tài khoản mới.</p>
+
+            <label>Username</label>
+            <input id="regUser" autocomplete="username" placeholder="nguyenviet01" />
+
+            <label>Họ tên</label>
+            <input id="regName" placeholder="Nguyễn Thành Việt" />
+
+            <label>Email</label>
+            <input id="regEmail" type="email" autocomplete="email" placeholder="viet@example.com" />
+
+            <label>Mật khẩu</label>
+            <input id="regPwd" type="password" autocomplete="new-password" placeholder="••••••••" />
+
+            <!-- role mặc định sẽ gán ở JS hoặc backend -->
+            <input type="hidden" id="regRole" value="STUDENT" />
+
+            <div class="row">
+                <button id="btnRegister" class="primary" style="width: 100%;">Tạo tài khoản</button>
+            </div>
+
+            <p class="muted" style="text-align: center; margin-top: 16px;">
+                Đã có tài khoản?
+                <a class="link" href="/admin/login.html">Đăng nhập ngay</a>
+            </p>
+
+            <p id="regMsg" class="muted"></p>
+        </div>
+    </div>
+
+    <script src="/assets/js/register.js"></script>
+</body>
+
+</html>
