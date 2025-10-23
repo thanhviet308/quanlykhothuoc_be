@@ -18,9 +18,9 @@ export const sequelize = new Sequelize(
 export async function testConnection() {
     try {
         await sequelize.authenticate();
-        console.log("✅ Kết nối PostgreSQL thành công!");
+        console.log("Kết nối PostgreSQL thành công!");
         await sequelize.sync({ alter: true });
     } catch (err) {
-        console.error("❌ Lỗi kết nối CSDL:", err.message);
+        console.error("Lỗi kết nối CSDL:", err.message);
     }
 }

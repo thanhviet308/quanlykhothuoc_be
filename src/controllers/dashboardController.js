@@ -49,15 +49,20 @@ export async function getDashboardData(req, res) {
             include: [{ model: Thuoc, as: 'thuoc', attributes: ['ma_thuoc', 'ten_thuoc'] }]
         });
 
-        const formattedWarnings = warnings.map(w => ({
-            ma_thuoc: w.thuoc.ma_thuoc,
-            ten_thuoc: w.thuoc.ten_thuoc,
-            so_lo: w.so_lo,
-            han_dung: w.han_dung.toISOString().split('T')[0],
-            so_luong_ton: w.so_luong,
-            ly_do: w.han_dung < today ? 'Quá hạn' : 'Sắp hết hạn',
-            lo_id: w.id,
-        }));
+        const formattedWarnings = warnings.map(w => {
+            // Định dạng han_dung sang DD/MM/YYYY
+            const [y, m, d] = w.han_dung.toISOString().split('T')[0].split('-');
+
+            return {
+                ma_thuoc: w.thuoc.ma_thuoc,
+                ten_thuoc: w.thuoc.ten_thuoc,
+                so_lo: w.so_lo,
+                han_dung: `${d}/${m}/${y}`, // 💡 ĐÃ SỬA: DD/MM/YYYY
+                so_luong_ton: w.so_luong,
+                ly_do: w.han_dung < today ? 'Quá hạn' : 'Sắp hết hạn',
+                lo_id: w.id,
+            };
+        });
 
 
         // --- 3. Phiếu gần đây ---
@@ -68,13 +73,18 @@ export async function getDashboardData(req, res) {
             include: [{ model: NguoiDung, as: 'nguoi_lap', attributes: ['username', 'ho_ten'] }]
         });
 
-        const formattedRecentPhieu = recentPhieu.map(p => ({
-            id: p.id,
-            so_phieu: p.so_phieu,
-            loai: p.loai,
-            ngay_phieu: p.ngay_phieu ? p.ngay_phieu.toISOString().split('T')[0] : p.created_at.toISOString().split('T')[0],
-            nguoi_lap: p.nguoi_lap?.ho_ten || p.nguoi_lap?.username || 'System User',
-        }));
+        const formattedRecentPhieu = recentPhieu.map(p => {
+            const dateISO = p.ngay_phieu ? p.ngay_phieu.toISOString().split('T')[0] : p.created_at.toISOString().split('T')[0];
+            const [y, m, d] = dateISO.split('-');
+
+            return {
+                id: p.id,
+                so_phieu: p.so_phieu,
+                loai: p.loai,
+                ngay_phieu: `${d}/${m}/${y}`, // 💡 ĐÃ SỬA: DD/MM/YYYY
+                nguoi_lap: p.nguoi_lap?.ho_ten || p.nguoi_lap?.username || 'System User',
+            };
+        });
 
         res.json({
             totalDrugs: totalDrugs,

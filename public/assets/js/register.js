@@ -46,7 +46,7 @@ async function register() {
         }
 
         setMsg("Tạo tài khoản thành công. Chuyển đến đăng nhập…");
-        setTimeout(() => window.location.href = "/admin/login", 700);
+        setTimeout(() => window.location.href = "/admin/login.html", 700);
     } catch (e) {
         setMsg("Lỗi mạng khi đăng ký");
     }

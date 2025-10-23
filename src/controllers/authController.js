@@ -8,6 +8,11 @@ const JWT_EXPIRES = process.env.JWT_EXPIRES || '8h';
 
 const normRole = (r) => String(r || '').trim().toUpperCase();
 const normUser = (u) => String(u || '').trim().toLowerCase();
+const envTrue = (v) => ['1', 'true', 'yes', 'on'].includes(String(v || '').trim().toLowerCase());
+// Mặc định CHO PHÉP đăng ký công khai trừ khi đặt ALLOW_PUBLIC_REGISTER=0/false
+const _aprFlag = process.env.ALLOW_PUBLIC_REGISTER;
+const ALLOW_PUBLIC_REGISTER =
+    _aprFlag === undefined ? true : envTrue(_aprFlag);
 
 export async function login(req, res) {
     const username = normUser(req.body?.username);
@@ -110,16 +115,36 @@ export async function register(req, res) {
     }
 
     try {
+        const totalUsers = await NguoiDung.count();
+
+        // Nếu chưa có user nào: cho phép đăng ký công khai và cấp quyền ADMIN để bootstrap
+        const isBootstrap = totalUsers === 0;
+
+        if (!isBootstrap && !ALLOW_PUBLIC_REGISTER) {
+            // Đã có user và không bật public register: yêu cầu ADMIN
+            const role = normRole(req.user?.role);
+            if (!role) return res.status(401).json({ message: 'Unauthorized' });
+            if (role !== 'ADMIN') return res.status(403).json({ message: 'Forbidden' });
+        }
+
         const exists = await NguoiDung.findOne({ where: { username } });
         if (exists) return res.status(409).json({ message: 'Username already exists' });
 
         const mat_khau_bam = await bcrypt.hash(password, 10);
+        const roleToAssign = isBootstrap ? 'ADMIN' : 'STAFF';
+
         const user = await NguoiDung.create({
             username, mat_khau_bam, ho_ten, email,
-            role: 'STAFF', hoat_dong: true
+            role: roleToAssign, hoat_dong: true
         });
 
-        return res.status(201).json({ id: user.id, username: user.username, role: normRole(user.role) });
+        return res.status(201).json({
+            id: user.id,
+            username: user.username,
+            role: normRole(user.role),
+            bootstrap: isBootstrap,
+            publicRegister: ALLOW_PUBLIC_REGISTER,
+        });
     } catch (err) {
         console.error('register error:', err);
         return res.status(500).json({ message: 'Server error' });

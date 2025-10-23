@@ -7,28 +7,39 @@ import { Op } from 'sequelize';
 export async function nhapKho(req, res) {
     const t = await sequelize.transaction();
     try {
-        // 💡 CẬP NHẬT: Lấy nguoi_lap_id từ token
         const nguoi_lap_id = req.user.id;
-
         const { so_phieu, loai, ngay_phieu, ghi_chu, chi_tiets } = req.body;
 
-        // Tạo phiếu kho
+        // 1. Tạo phiếu kho (PhieuKho)
         const phieu = await PhieuKho.create({ so_phieu, loai, ngay_phieu, ghi_chu, nguoi_lap_id }, { transaction: t });
 
+        // 2. Xử lý chi tiết
         for (const ct of chi_tiets) {
-            const { thuoc_id, lo_id, so_luong, don_gia } = ct;
-            await PhieuKhoCT.create({ phieu_id: phieu.id, thuoc_id, lo_id, so_luong, don_gia }, { transaction: t });
+            const { thuoc_id, so_luong, don_gia } = ct;
+            let loIdToUse = ct.lo_id; // ID của Lô sẽ được sử dụng cho Chi tiết Phiếu
 
-            if (lo_id) {
-                const lo = await LoThuoc.findByPk(lo_id, { transaction: t });
-                if (lo) {
-                    lo.so_luong = (lo.so_luong || 0) + so_luong;
-                    await lo.save({ transaction: t });
+            if (loIdToUse) {
+                // Scenario 1: Cập nhật Lô có sẵn
+                const lo = await LoThuoc.findByPk(loIdToUse, { transaction: t });
+                if (!lo) {
+                    throw new Error(`Lô ID ${loIdToUse} không tồn tại.`);
                 }
+                lo.so_luong = (lo.so_luong || 0) + so_luong;
+                await lo.save({ transaction: t });
             } else {
-                // create a new lot
-                await LoThuoc.create({ thuoc_id, so_lo: ct.so_lo || null, han_dung: ct.han_dung || null, so_luong, gia_nhap: don_gia }, { transaction: t });
+                // Scenario 2: Tạo Lô mới
+                const newLo = await LoThuoc.create({
+                    thuoc_id,
+                    so_lo: ct.so_lo || null,
+                    han_dung: ct.han_dung || null,
+                    so_luong,
+                    gia_nhap: don_gia
+                }, { transaction: t });
+                loIdToUse = newLo.id; // Lấy ID của Lô mới vừa tạo
             }
+
+            // 3. Tạo chi tiết phiếu kho (PhieuKhoCT) sử dụng loIdToUse đã xác định
+            await PhieuKhoCT.create({ phieu_id: phieu.id, thuoc_id, lo_id: loIdToUse, so_luong, don_gia }, { transaction: t });
         }
 
         await t.commit();
@@ -60,7 +71,10 @@ export async function xuatKho(req, res) {
             // Chỉ xuất những lô còn tồn
             const lots = await LoThuoc.findAll({
                 where: { thuoc_id, so_luong: { [Op.gt]: 0 } },
-                order: [['han_dung', 'ASC']],
+                order: [
+                    ['han_dung', 'ASC'], // Tiêu chí 1: Hạn dùng sớm nhất (FEFO)
+                    ['id', 'ASC']        // 💡 SỬA LỖI: Tiêu chí 2: ID nhỏ nhất (FIFO) nếu HSD trùng
+                ],
                 transaction: t
             });
 
@@ -122,15 +136,21 @@ export async function listPhieu(req, res) {
             include: [{ model: NguoiDung, as: 'nguoi_lap', attributes: ['username', 'ho_ten'] }]
         });
 
-        const formattedRows = rows.map(p => ({
-            id: p.id,
-            so_phieu: p.so_phieu,
-            loai: p.loai,
-            ngay_phieu: p.ngay_phieu ? p.ngay_phieu.toISOString().split('T')[0] : null,
-            ghi_chu: p.ghi_chu,
-            nguoi_lap: p.nguoi_lap?.ho_ten || p.nguoi_lap?.username || 'System',
-            created_at: p.created_at.toISOString(),
-        }));
+        const formattedRows = rows.map(p => {
+            // Định dạng ngay_phieu sang DD/MM/YYYY
+            const ngayPhieuISO = p.ngay_phieu?.toISOString().split('T')[0];
+            const ngayPhieuFormatted = ngayPhieuISO ? ngayPhieuISO.split('-').reverse().join('/') : null;
+
+            return {
+                id: p.id,
+                so_phieu: p.so_phieu,
+                loai: p.loai,
+                ngay_phieu: ngayPhieuFormatted, // 💡 ĐÃ SỬA: DD/MM/YYYY
+                ghi_chu: p.ghi_chu,
+                nguoi_lap: p.nguoi_lap?.ho_ten || p.nguoi_lap?.username || 'System',
+                created_at: p.created_at.toISOString(),
+            };
+        });
 
         res.json({
             data: formattedRows,
@@ -179,23 +199,33 @@ export async function getPhieu(req, res) {
             return res.status(404).json({ message: 'Phiếu kho không tồn tại' });
         }
 
-        const formattedDetails = phieu.chi_tiets.map(ct => ({
-            id: ct.id,
-            ma_thuoc: ct.thuoc.ma_thuoc,
-            ten_thuoc: ct.thuoc.ten_thuoc,
-            don_vi_tinh: ct.thuoc.don_vi_tinh?.ten || null,
-            so_lo: ct.lo_thuoc?.so_lo || null,
-            han_dung: ct.lo_thuoc?.han_dung ? ct.lo_thuoc.han_dung.toISOString().split('T')[0] : null,
-            so_luong: ct.so_luong,
-            don_gia: ct.don_gia,
-            thanh_tien: (ct.so_luong * (ct.don_gia || 0)).toFixed(2),
-        }));
+        // Định dạng ngay_phieu
+        const ngayPhieuISO = phieu.ngay_phieu?.toISOString().split('T')[0];
+        const ngayPhieuFormatted = ngayPhieuISO ? ngayPhieuISO.split('-').reverse().join('/') : null;
+
+        const formattedDetails = phieu.chi_tiets.map(ct => {
+            // Định dạng han_dung
+            const hanDungISO = ct.lo_thuoc?.han_dung?.toISOString().split('T')[0];
+            const hanDungFormatted = hanDungISO ? hanDungISO.split('-').reverse().join('/') : null;
+
+            return {
+                id: ct.id,
+                ma_thuoc: ct.thuoc.ma_thuoc,
+                ten_thuoc: ct.thuoc.ten_thuoc,
+                don_vi_tinh: ct.thuoc.don_vi_tinh?.ten || null,
+                so_lo: ct.lo_thuoc?.so_lo || null,
+                han_dung: hanDungFormatted, // 💡 ĐÃ SỬA: DD/MM/YYYY
+                so_luong: ct.so_luong,
+                don_gia: ct.don_gia,
+                thanh_tien: (ct.so_luong * (ct.don_gia || 0)).toFixed(2),
+            };
+        });
 
         res.json({
             id: phieu.id,
             so_phieu: phieu.so_phieu,
             loai: phieu.loai,
-            ngay_phieu: phieu.ngay_phieu ? phieu.ngay_phieu.toISOString().split('T')[0] : null,
+            ngay_phieu: ngayPhieuFormatted, // 💡 ĐÃ SỬA: DD/MM/YYYY
             ghi_chu: phieu.ghi_chu,
             nguoi_lap: phieu.nguoi_lap?.ho_ten || phieu.nguoi_lap?.username || 'System',
             created_at: phieu.created_at.toISOString(),
