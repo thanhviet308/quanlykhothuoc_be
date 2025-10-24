@@ -70,7 +70,7 @@ async function checkMe() {
         const r = await fetch(EP.me(), { headers: authHeaders() });
         const payload = await r.json();
         const me = payload.user || payload;
-        document.getElementById("me_info").textContent = `${me.username} (${me.role})`;
+        document.getElementById("me_info").textContent = `${me.username} (${roleLabel(me.role)})`;
         if ((me.role || "").toUpperCase() !== "ADMIN") {
             alert("Bạn không có quyền vào trang quản trị!");
             location.href = "/";
@@ -80,6 +80,14 @@ async function checkMe() {
     } catch {
         location.href = "/admin/login.html";
     }
+}
+
+function roleLabel(role) {
+    if (!role) return '';
+    const r = (role || '').toString().toUpperCase();
+    if (r === 'ADMIN') return 'Quản trị viên';
+    if (r === 'STAFF') return 'Nhân viên kho';
+    return role;
 }
 
 async function logout() {

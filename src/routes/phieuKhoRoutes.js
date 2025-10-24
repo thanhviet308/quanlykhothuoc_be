@@ -1,6 +1,6 @@
 // src/routes/phieuKhoRoutes.js
 import express from 'express';
-import { nhapKho, xuatKho, listPhieu, getPhieu } from '../controllers/phieuKhoController.js'; // Import listPhieu, getPhieu
+import { nhapKho, xuatKho, listPhieu, getPhieu, deletePhieu } from '../controllers/phieuKhoController.js'; // Import listPhieu, getPhieu
 import { requireAuth, requireRole } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
@@ -13,5 +13,9 @@ router.post('/xuat', requireAuth, requireRole('ADMIN', 'STAFF'), xuatKho);
 router.get('/', requireAuth, requireRole('ADMIN', 'STAFF'), listPhieu);
 // 💡 ROUTE MỚI: Xem chi tiết phiếu theo ID
 router.get('/:id', requireAuth, requireRole('ADMIN', 'STAFF'), getPhieu);
+// 💡 ROUTE CẬP NHẬT: Cập nhật Phiếu (Chỉ ADMIN)
+// (Đã bỏ các route cập nhật phiếu và chi tiết để vô hiệu hóa chức năng cập nhật)
+// 💡 ROUTE XÓA: Xóa Phiếu (Chỉ ADMIN)
+router.delete('/:id', requireAuth, requireRole('ADMIN'), deletePhieu);
 
 export default router;

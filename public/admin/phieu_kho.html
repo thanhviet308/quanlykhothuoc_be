@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="vi">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Quản lý Phiếu Kho</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="/assets/css/users.css" />
+    <link rel="stylesheet" href="/assets/css/phieu-kho.css" />
+</head>
+
+<body id="phieu-kho-list-page">
+    <header class="row">
+        <h2>📦 Quản lý Phiếu Kho</h2>
+        <div class="right row">
+            <span class="muted" id="me_info">Đang kiểm tra phiên...</span>
+            <button id="btn_logout" class="warn">Đăng xuất</button>
+        </div>
+    </header>
+
+    <main>
+        <div class="admin-nav row">
+            <a href="/admin/users.html">Quản lý người dùng</a>
+            <a href="/admin/thuoc.html">Quản lý thuốc</a>
+            <a href="/admin/phieu_kho.html" class="active">Quản lý Phiếu Kho</a>
+        </div>
+
+        <div class="card">
+            <div class="row">
+                <input id="q" placeholder="Tìm theo Số phiếu..." style="flex:1" />
+                <select id="loaiFilter" style="width: 150px;">
+                    <option value="">-- Tất cả --</option>
+                    <option value="NHAP">Nhập Kho</option>
+                    <option value="XUAT">Xuất Kho</option>
+                </select>
+                <button id="btn_search">Tìm</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="row">
+                <div class="muted" id="count_info">0 kết quả</div>
+                <div class="right row">
+                    <button id="prev" disabled>&larr; Trước</button>
+                    <span id="page_info" class="muted">Trang 1/1</span>
+                    <button id="next" disabled>Sau &rarr;</button>
+                </div>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">ID</th>
+                        <th style="width: 150px;">Số phiếu</th>
+                        <th style="width: 120px;">Loại</th>
+                        <th style="width: 150px;">Ngày phiếu</th>
+                        <th>Người lập</th>
+                        <th style="width: 180px;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody"></tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- Đã bỏ modal cập nhật phiếu để vô hiệu hóa chức năng cập nhật -->
+
+    <script src="/assets/js/phieu-kho.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,18 @@
+/* Search/filter row spacing */
+#phieu-kho-list-page .card .row {
+    gap: 8px;
+}
+
+/* Pill colors reuse users.css classes (ok, danger, muted). Add small padding for table pills */
+.pill {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+}
+
+/* Table tweaks */
+#phieu-kho-list-page table td,
+#phieu-kho-list-page table th {
+    vertical-align: middle;
+}

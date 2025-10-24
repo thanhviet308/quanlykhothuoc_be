@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="vi">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Chi tiết Phiếu Kho</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="/assets/css/users.css" />
+    <style>
+        .grid-info {
+            display: grid;
+            grid-template-columns: 150px 1fr;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .grid-info label {
+            font-weight: 500;
+            color: var(--muted);
+        }
+
+        .grid-info span {
+            font-weight: 600;
+            color: var(--txt);
+        }
+    </style>
+</head>
+
+<body id="phieu-kho-detail-page">
+    <header class="row">
+        <h2>📦 Chi tiết Phiếu Kho</h2>
+        <div class="right row">
+            <span class="muted" id="me_info">Đang kiểm tra phiên...</span>
+            <button id="btn_logout" class="warn">Đăng xuất</button>
+        </div>
+    </header>
+
+    <main id="detail_wrap">
+        <a href="/admin/phieu_kho.html" class="muted" style="text-decoration: none;">&larr; Quay lại danh sách phiếu</a>
+
+        <div class="card" style="margin-top: 10px;">
+            <h3>Thông tin chung</h3>
+            <div class="grid-info">
+                <label>Số Phiếu:</label> <span id="p_so_phieu">...</span>
+                <label>Loại Phiếu:</label> <span id="p_loai">...</span>
+                <label>Ngày Phiếu:</label> <span id="p_ngay_phieu">...</span>
+                <label>Người Lập:</label> <span id="p_nguoi_lap">...</span>
+                <label>Ghi Chú:</label> <span id="p_ghi_chu">...</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Chi tiết mặt hàng</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Mã Thuốc</th>
+                        <th>Tên Thuốc</th>
+                        <th>Số Lô</th>
+                        <th>Hạn Dùng</th>
+                        <th>Số Lượng</th>
+                        <th>Đơn Giá</th>
+                        <th>Thành Tiền</th>
+                    </tr>
+                </thead>
+                <tbody id="detail_tbody">
+                    <tr>
+                        <td colspan="7" class="muted">Đang tải chi tiết...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script src="/assets/js/phieu-kho.js"></script>
+</body>
+
+</html>

@@ -34,7 +34,7 @@ async function checkMe() {
         const r = await fetch(EP.me(), { headers: authHeaders() });
         const payload = await r.json();
         const me = payload.user || payload; // backend trả {user:{...}}
-        document.getElementById("me_info").textContent = `${me.username} (${me.role})`;
+        document.getElementById("me_info").textContent = `${me.username} (${roleLabel(me.role)})`;
         if ((me.role || "").toUpperCase() !== "ADMIN") {
             alert("Bạn không có quyền vào trang quản trị!");
             location.href = "/";
@@ -42,6 +42,14 @@ async function checkMe() {
     } catch {
         location.href = "/login.html";
     }
+}
+
+function roleLabel(role) {
+    if (!role) return '';
+    const r = (role || '').toString().toUpperCase();
+    if (r === 'ADMIN') return 'Quản trị viên';
+    if (r === 'STAFF') return 'Nhân viên kho';
+    return role;
 }
 
 async function logout() {
@@ -69,7 +77,7 @@ async function loadUsers(p = 1) {
         <td>${u.username}</td>
         <td>${u.ho_ten || ""}</td>
         <td>${u.email || ""}</td>
-        <td>${u.role}</td>
+                <td>${roleLabel(u.role)}</td>
         <td>
           <span class="pill ${u.hoat_dong ? "active" : "inactive"}">
             ${u.hoat_dong ? "Đang hoạt động" : "Ngừng hoạt động"}
@@ -170,11 +178,26 @@ document.getElementById("btn_new").onclick = () => showModal();
 document.getElementById("btn_cancel").onclick = closeModal;
 document.getElementById("btn_save").onclick = saveUser;
 document.getElementById("btn_search").onclick = () => {
-    q = document.getElementById("q").value.trim();
-    roleFilter = document.getElementById("roleFilter").value;
-    activeFilter = document.getElementById("activeFilter").value;
+    const qEl = document.getElementById("q");
+    const roleEl = document.getElementById("roleFilter");
+    const activeEl = document.getElementById("activeFilter");
+
+    q = qEl ? qEl.value.trim() : "";
+    roleFilter = roleEl ? roleEl.value : "";
+    activeFilter = activeEl ? activeEl.value : "";
     loadUsers(1);
 };
+
+// Support pressing Enter in the search input
+const qInput = document.getElementById('q');
+if (qInput) {
+    qInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            document.getElementById('btn_search').click();
+        }
+    });
+}
 document.getElementById("prev").onclick = () => { if (page > 1) loadUsers(page - 1); };
 document.getElementById("next").onclick = () => { if (page < pages) loadUsers(page + 1); };
 

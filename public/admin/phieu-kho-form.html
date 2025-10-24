@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="vi">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Tạo Phiếu Kho</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="/assets/css/users.css" />
+    <style>
+        .item-form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        #thuoc_search_results {
+            border: 1px solid var(--border);
+            border-top: none;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            position: absolute;
+            background: var(--card);
+            width: calc(100% - 20px);
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 10;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        #thuoc_search_results li {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+        }
+
+        #thuoc_search_results li:hover {
+            background: #f5f5f5;
+        }
+
+        .relative-container {
+            position: relative;
+        }
+    </style>
+</head>
+
+<body id="phieu-kho-form-page">
+    <header class="row">
+        <h2>📝 <span id="form_title">Tạo Phiếu Kho Mới</span></h2>
+        <div class="right row">
+            <span class="muted" id="me_info">Đang kiểm tra phiên...</span>
+            <button id="btn_logout" class="warn">Đăng xuất</button>
+        </div>
+    </header>
+
+    <main>
+        <a href="/admin/phieu_kho.html" class="muted" style="text-decoration: none;">&larr; Quay lại danh sách phiếu</a>
+
+        <div class="card" style="margin-top: 10px;">
+            <h3>Thông tin Phiếu: <span id="p_loai" class="pill primary">...</span></h3>
+            <div class="grid">
+                <div>
+                    <label>Số Phiếu <span style="color: red;">*</span></label>
+                    <input id="f_so_phieu" placeholder="VD: PKNHAP/20250101-001" />
+                </div>
+                <div>
+                    <label>Ngày Phiếu <span style="color: red;">*</span></label>
+                    <input id="f_ngay_phieu" type="date" value="" />
+                    <script>document.getElementById('f_ngay_phieu').valueAsDate = new Date();</script>
+                </div>
+            </div>
+            <div style="margin-top: 10px;">
+                <label>Ghi Chú</label>
+                <textarea id="f_ghi_chu" rows="3" placeholder="Ghi chú về phiếu..."></textarea>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Thêm Chi tiết Phiếu</h3>
+            <div class="relative-container">
+                <label>Tìm và Chọn Thuốc</label>
+                <input id="search_thuoc" placeholder="Nhập mã hoặc tên thuốc để tìm..." />
+                <ul id="thuoc_search_results"></ul>
+            </div>
+
+            <p class="muted" id="thuoc_info">Chưa chọn thuốc</p>
+            <p id="xuat_warning" class="muted hidden" style="color: var(--danger); font-weight: 500;">
+                **Lưu ý:** Đối với Phiếu Xuất, hệ thống sẽ **tự động chọn lô** theo nguyên tắc FEFO (Hạn dùng sớm nhất)
+                ở backend.
+            </p>
+
+            <div id="item_form_wrap" class="hidden">
+                <div class="item-form-grid">
+                    <div>
+                        <label>Số Lượng <span style="color: red;">*</span></label>
+                        <input id="f_so_luong" type="number" min="1" value="1" placeholder="Số lượng" />
+                    </div>
+                    <div>
+                        <label>Đơn Giá (Giá nhập/xuất)</label>
+                        <input id="f_don_gia" type="number" min="0" value="0" placeholder="Đơn giá" />
+                    </div>
+
+                    <div id="lo_input_nhap" class="grid" style="grid-template-columns: 1fr 1fr;">
+                        <div>
+                            <label>Số Lô</label>
+                            <input id="f_so_lo" placeholder="Số lô mới (nếu có)" />
+                        </div>
+                        <div>
+                            <label>Hạn Dùng</label>
+                            <input id="f_han_dung" type="date" />
+                        </div>
+                        <div style="grid-column: 1 / span 2;">
+                            <label>Hoặc ID Lô cũ (Nếu nhập thêm vào lô cũ)</label>
+                            <input id="f_lo_id_nhap" type="number" placeholder="ID Lô (LoThuoc.id)" />
+                        </div>
+                    </div>
+                </div>
+                <button id="add_item_btn" class="ok" style="margin-top: 10px;">Thêm vào Chi tiết</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Danh sách Chi tiết</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 30px;">#</th>
+                        <th>Thuốc</th>
+                        <th>Số Lô/ID Lô</th>
+                        <th>Hạn Dùng</th>
+                        <th>Số Lượng</th>
+                        <th>Đơn Giá</th>
+                        <th style="width: 80px;"></th>
+                    </tr>
+                </thead>
+                <tbody id="detail_form_tbody">
+                    <tr>
+                        <td colspan="7" class="muted">Chưa có chi tiết phiếu.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="row" style="margin-top: 20px;">
+                <button id="btn_submit_phieu" class="primary" onclick="submitPhieu()">LƯU PHIẾU VÀ CẬP NHẬT KHO</button>
+                <a href="/admin/phieu_kho.html" class="right"><button type="button">Hủy</button></a>
+            </div>
+        </div>
+    </main>
+
+    <script src="/assets/js/phieu-kho.js"></script>
+</body>
+
+</html>

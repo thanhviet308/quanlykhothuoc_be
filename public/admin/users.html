@@ -10,7 +10,7 @@
 
 <body>
     <header class="row">
-        <h2>🛡️ ADMIN — Quản trị người dùng</h2>
+        <h2>Quản trị người dùng</h2>
         <div class="right row">
             <span class="muted" id="me_info">Đang kiểm tra phiên...</span>
             <button id="btn_logout" class="warn">Đăng xuất</button>
@@ -21,6 +21,8 @@
         <div class="admin-nav row">
             <a href="/admin/users.html" class="active">Quản lý người dùng</a>
             <a href="/admin/thuoc.html">Quản lý thuốc</a>
+            <a href="/admin/phieu_kho.html">Quản lý phiếu kho</a>
+        </div>
         </div>
 
         <div class="card">
@@ -46,7 +48,7 @@
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th>Username</th>
+                        <th>Tên đăng nhập</th>
                         <th>Họ tên</th>
                         <th>Email</th>
                         <th>Vai trò</th>
@@ -64,11 +66,11 @@
             <h3 id="modal_title">Thêm/Sửa người dùng</h3>
             <div class="grid">
                 <div>
-                    <label>Username</label>
+                    <label>Tên đăng nhập</label>
                     <input id="f_username" placeholder="Username" data-id="" />
                 </div>
                 <div>
-                    <label>Mật khẩu (Để trống nếu không đổi)</label>
+                    <label>Mật khẩu</label>
                     <input id="f_password" type="password" placeholder="Mật khẩu" />
                 </div>
                 <div>
@@ -82,8 +84,8 @@
                 <div>
                     <label>Vai trò</label>
                     <select id="f_role">
-                        <option value="STAFF">STAFF</option>
-                        <option value="ADMIN">ADMIN</option>
+                        <option value="STAFF">Nhân viên kho</option>
+                        <option value="ADMIN">Quản trị viên</option>
                     </select>
                 </div>
                 <div>

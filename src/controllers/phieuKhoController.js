@@ -67,13 +67,24 @@ export async function xuatKho(req, res) {
             let { thuoc_id, so_luong, don_gia } = ct;
             let qtyLeft = so_luong;
 
-            // find lots ordered by earliest han_dung
-            // Chỉ xuất những lô còn tồn
+            // find lots ordered by earliest han_dung (FEFO), but SKIP expired lots
+            // Chỉ lấy lô còn tồn và có hạn dùng >= hôm nay hoặc không có hạn (han_dung IS NULL)
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
             const lots = await LoThuoc.findAll({
-                where: { thuoc_id, so_luong: { [Op.gt]: 0 } },
+                where: {
+                    thuoc_id,
+                    so_luong: { [Op.gt]: 0 },
+                    [Op.or]: [
+                        { han_dung: null },
+                        { han_dung: { [Op.gte]: today } }
+                    ]
+                },
+                // Quy tắc xuất: ưu tiên lô nhập trước (FIFO) nhưng chỉ trên tập các lô còn hạn
                 order: [
-                    ['han_dung', 'ASC'], // Tiêu chí 1: Hạn dùng sớm nhất (FEFO)
-                    ['id', 'ASC']        // 💡 SỬA LỖI: Tiêu chí 2: ID nhỏ nhất (FIFO) nếu HSD trùng
+                    ['created_at', 'ASC'], // Lô nhập trước sẽ được xuất trước
+                    ['id', 'ASC']
                 ],
                 transaction: t
             });
@@ -108,8 +119,66 @@ export async function xuatKho(req, res) {
     }
 }
 
+// 💡 HÀM MỚI: Xóa Phiếu Kho (Phải đảo ngược tồn kho)
+export async function deletePhieu(req, res) {
+    const t = await sequelize.transaction();
+    try {
+        const phieuId = req.params.id;
+        // Lấy phiếu kho và lock dòng (FOR UPDATE)
+        const phieu = await PhieuKho.findByPk(phieuId, { transaction: t, lock: t.LOCK.UPDATE });
 
-// 💡 HÀM MỚI: Lấy danh sách các phiếu kho
+        if (!phieu) {
+            await t.rollback();
+            return res.status(404).json({ message: 'Phiếu kho không tồn tại' });
+        }
+
+        // Lấy chi tiết phiếu
+        const chiTiets = await PhieuKhoCT.findAll({ where: { phieu_id: phieu.id }, transaction: t });
+
+        for (const ct of chiTiets) {
+            // Lấy lô thuốc và lock dòng
+            const lot = await LoThuoc.findByPk(ct.lo_id, { transaction: t, lock: t.LOCK.UPDATE });
+
+            if (!lot) {
+                await t.rollback();
+                throw new Error(`Không tìm thấy Lô ID ${ct.lo_id} liên quan đến chi tiết phiếu ${ct.id}.`);
+            }
+
+            // Lượng cần đảo ngược: -ct.so_luong
+            // Nếu ct.so_luong > 0 (NHAP), reverseQty sẽ âm (trừ tồn)
+            // Nếu ct.so_luong < 0 (XUAT), reverseQty sẽ dương (cộng tồn)
+            const reverseQty = -ct.so_luong;
+
+            lot.so_luong = (lot.so_luong || 0) + reverseQty;
+
+            // NGHIỆP VỤ: Không cho phép xóa phiếu nếu việc đảo ngược tồn kho dẫn đến tồn kho bị âm
+            if (lot.so_luong < 0) {
+                await t.rollback();
+                return res.status(400).json({
+                    message: `Không thể xóa phiếu ${phieu.so_phieu}. Tồn kho của lô ${lot.so_lo} sẽ âm (${lot.so_luong}) sau khi đảo ngược.`
+                });
+            }
+
+            await lot.save({ transaction: t });
+        }
+
+        // Xóa tất cả Chi tiết và Phiếu
+        await PhieuKhoCT.destroy({ where: { phieu_id: phieu.id }, transaction: t });
+        await phieu.destroy({ transaction: t });
+
+        await t.commit();
+        res.json({ message: 'Xóa phiếu kho và đảo ngược tồn kho thành công' });
+
+    } catch (err) {
+        await t.rollback();
+        console.error('deletePhieu error:', err);
+        const statusCode = err.message.includes('Tồn kho của lô') ? 400 : 500;
+        res.status(statusCode).json({ message: err.message });
+    }
+}
+
+
+// 💡 listPhieu và getPhieu được giữ nguyên.
 export async function listPhieu(req, res) {
     try {
         let { q = '', page = 1, limit = 20, loai = '' } = req.query;
@@ -125,6 +194,12 @@ export async function listPhieu(req, res) {
             where.loai = loai.toUpperCase();
         }
 
+        // Phân quyền: STAFF chỉ thấy phiếu do mình lập; ADMIN thấy tất cả
+        const role = (req.user?.role || '').toUpperCase();
+        if (role === 'STAFF') {
+            where.nguoi_lap_id = req.user.id;
+        }
+
         const offset = (page - 1) * limit;
 
         const { rows, count } = await PhieuKho.findAndCountAll({
@@ -136,10 +211,25 @@ export async function listPhieu(req, res) {
             include: [{ model: NguoiDung, as: 'nguoi_lap', attributes: ['username', 'ho_ten'] }]
         });
 
+        const toDDMMYYYY = (val) => {
+            if (!val) return null;
+            if (typeof val === 'string') {
+                const base = val.includes('T') ? val.split('T')[0] : val;
+                const [y, m, d] = base.split('-');
+                if (y && m && d) return `${d}/${m}/${y}`;
+                return val; // fallback
+            }
+            try {
+                const iso = val.toISOString().split('T')[0];
+                const [y, m, d] = iso.split('-');
+                return `${d}/${m}/${y}`;
+            } catch {
+                return null;
+            }
+        };
+
         const formattedRows = rows.map(p => {
-            // Định dạng ngay_phieu sang DD/MM/YYYY
-            const ngayPhieuISO = p.ngay_phieu?.toISOString().split('T')[0];
-            const ngayPhieuFormatted = ngayPhieuISO ? ngayPhieuISO.split('-').reverse().join('/') : null;
+            const ngayPhieuFormatted = toDDMMYYYY(p.ngay_phieu);
 
             return {
                 id: p.id,
@@ -148,7 +238,7 @@ export async function listPhieu(req, res) {
                 ngay_phieu: ngayPhieuFormatted, // 💡 ĐÃ SỬA: DD/MM/YYYY
                 ghi_chu: p.ghi_chu,
                 nguoi_lap: p.nguoi_lap?.ho_ten || p.nguoi_lap?.username || 'System',
-                created_at: p.created_at.toISOString(),
+                created_at: p.created_at ? p.created_at.toISOString() : null,
             };
         });
 
@@ -165,8 +255,6 @@ export async function listPhieu(req, res) {
     }
 }
 
-
-// 💡 HÀM MỚI: Xem chi tiết một phiếu kho
 export async function getPhieu(req, res) {
     try {
         const phieuId = req.params.id;
@@ -177,7 +265,7 @@ export async function getPhieu(req, res) {
                 {
                     model: PhieuKhoCT,
                     as: 'chi_tiets',
-                    attributes: ['id', 'so_luong', 'don_gia'],
+                    attributes: ['id', 'so_luong', 'don_gia', 'lo_id'],
                     include: [
                         {
                             model: Thuoc,
@@ -199,17 +287,33 @@ export async function getPhieu(req, res) {
             return res.status(404).json({ message: 'Phiếu kho không tồn tại' });
         }
 
-        // Định dạng ngay_phieu
-        const ngayPhieuISO = phieu.ngay_phieu?.toISOString().split('T')[0];
-        const ngayPhieuFormatted = ngayPhieuISO ? ngayPhieuISO.split('-').reverse().join('/') : null;
+        // Định dạng ngày/tháng/năm an toàn cho cả Date và string
+        const toDDMMYYYY = (val) => {
+            if (!val) return null;
+            if (typeof val === 'string') {
+                const base = val.includes('T') ? val.split('T')[0] : val;
+                const [y, m, d] = base.split('-');
+                if (y && m && d) return `${d}/${m}/${y}`;
+                return val; // fallback
+            }
+            try {
+                const iso = val.toISOString().split('T')[0];
+                const [y, m, d] = iso.split('-');
+                return `${d}/${m}/${y}`;
+            } catch {
+                return null;
+            }
+        };
+
+        const ngayPhieuFormatted = toDDMMYYYY(phieu.ngay_phieu);
 
         const formattedDetails = phieu.chi_tiets.map(ct => {
             // Định dạng han_dung
-            const hanDungISO = ct.lo_thuoc?.han_dung?.toISOString().split('T')[0];
-            const hanDungFormatted = hanDungISO ? hanDungISO.split('-').reverse().join('/') : null;
+            const hanDungFormatted = toDDMMYYYY(ct.lo_thuoc?.han_dung);
 
             return {
                 id: ct.id,
+                lo_id: ct.lo_id,
                 ma_thuoc: ct.thuoc.ma_thuoc,
                 ten_thuoc: ct.thuoc.ten_thuoc,
                 don_vi_tinh: ct.thuoc.don_vi_tinh?.ten || null,
@@ -228,7 +332,7 @@ export async function getPhieu(req, res) {
             ngay_phieu: ngayPhieuFormatted, // 💡 ĐÃ SỬA: DD/MM/YYYY
             ghi_chu: phieu.ghi_chu,
             nguoi_lap: phieu.nguoi_lap?.ho_ten || phieu.nguoi_lap?.username || 'System',
-            created_at: phieu.created_at.toISOString(),
+            created_at: phieu.created_at ? phieu.created_at.toISOString() : null,
             chi_tiets: formattedDetails,
         });
 
