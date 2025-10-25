@@ -134,7 +134,7 @@ async function loadPhieuDetail() {
         const items = data.chi_tiets || [];
         if (!tbody) return;
         if (items.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="7" class="muted">Không có chi tiết.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="6" class="muted">Không có chi tiết.</td></tr>`;
             return;
         }
 
@@ -143,7 +143,6 @@ async function loadPhieuDetail() {
             const han_dung = it.han_dung || '-';
             const so_luong = it.so_luong != null ? it.so_luong : '-';
             const don_gia = (it.don_gia != null) ? parseFloat(it.don_gia).toFixed(2) : '-';
-            const thanh_tien = (it.so_luong != null && it.don_gia != null) ? (parseFloat(it.so_luong) * parseFloat(it.don_gia)).toFixed(2) : '-';
             const ma = it.ma_thuoc || (it.thuoc && it.thuoc.ma_thuoc) || '-';
             const ten = it.ten_thuoc || (it.thuoc && it.thuoc.ten_thuoc) || '-';
 
@@ -155,7 +154,6 @@ async function loadPhieuDetail() {
                     <td>${han_dung}</td>
                     <td>${so_luong}</td>
                     <td>${don_gia}</td>
-                    <td>${thanh_tien}</td>
                 </tr>
             `;
         }).join('');

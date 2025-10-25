@@ -14,7 +14,7 @@ export async function listThuoc(req, res) {
     }
 
     try {
-        const items = await Thuoc.findAll({ where, limit: +limit, offset: +offset, order: [['id', 'DESC']] });
+        const items = await Thuoc.findAll({ where, limit: +limit, offset: +offset, order: [['id', 'ASC']] });
         res.json(items);
     } catch (err) {
         console.error(err);
